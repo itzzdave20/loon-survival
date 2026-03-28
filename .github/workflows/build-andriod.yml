@@ -40,8 +40,16 @@ jobs:
       - name: Accept Android SDK licenses and install build tools
         run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses && "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;31.0.0" "ndk;25.2.9519653"
 
-      - name: Ensure aidl is available for Buildozer
-        run: test -f "$ANDROID_SDK_ROOT/build-tools/31.0.0/aidl" && mkdir -p "$ANDROID_SDK_ROOT/build-tools" && ln -sfn "$ANDROID_SDK_ROOT/build-tools/31.0.0" "$ANDROID_SDK_ROOT/build-tools/31.0.0"
+      - name: Verify AIDL is available
+        run: |
+          if [ ! -f "$ANDROID_SDK_ROOT/build-tools/31.0.0/aidl" ]; then
+            echo "AIDL not found at expected location"
+            find "$ANDROID_SDK_ROOT/build-tools" -name "aidl" -type f 2>/dev/null || echo "AIDL not found anywhere"
+            exit 1
+          fi
+          chmod +x "$ANDROID_SDK_ROOT/build-tools/31.0.0/aidl"
+          echo "AIDL found and made executable"
+          ls -la "$ANDROID_SDK_ROOT/build-tools/31.0.0/aidl"
 
       - name: Install system dependencies
         run: sudo apt update && sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
