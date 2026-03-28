@@ -15,6 +15,7 @@ jobs:
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
       ANDROID_NDK_HOME: /usr/local/lib/android/sdk/ndk/25.2.9519653
+      ANDROID_SDK_LICENSE: android-sdk-license
 
     steps:
       - name: Checkout repository
@@ -34,36 +35,14 @@ jobs:
       - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
 
-      - name: Debug and locate Android SDK
+      - name: Pre-accept Android SDK licenses for buildozer
         run: |
-          echo "Checking Android SDK paths..."
-          ls -la "$ANDROID_SDK_ROOT/" 2>/dev/null || echo "ANDROID_SDK_ROOT not found: $ANDROID_SDK_ROOT"
-          find /usr/local/lib/android/sdk -name "aidl" -type f 2>/dev/null | head -5 || echo "No aidl found in /usr/local/lib"
-          find ~ -name "aidl" -type f 2>/dev/null | head -5 || echo "No aidl found in home"
-
-      - name: Add legacy sdkmanager path for Buildozer
-        run: mkdir -p "$ANDROID_SDK_ROOT/tools/bin" && ln -sf "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "$ANDROID_SDK_ROOT/tools/bin/sdkmanager" && ln -sf "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager" "$ANDROID_SDK_ROOT/tools/bin/avdmanager"
-
-      - name: Accept Android SDK licenses and install build tools
-        run: yes | "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" --licenses && "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;31.0.0" "cmake;3.22.1"
-
-      - name: Verify AIDL exists and set permissions
-        run: |
-          echo "Looking for aidl binary..."
-          AIDL_PATH="$ANDROID_SDK_ROOT/build-tools/31.0.0/aidl"
-          
-          if [ -f "$AIDL_PATH" ]; then
-            chmod +x "$AIDL_PATH"
-            echo "✓ AIDL found and made executable"
-            ls -la "$AIDL_PATH"
-          else
-            echo "✗ AIDL not found at $AIDL_PATH"
-            echo "Available build-tools versions:"
-            ls -la "$ANDROID_SDK_ROOT/build-tools/" 2>/dev/null || echo "build-tools directory not found"
-            echo "Searching for aidl anywhere in SDK:"
-            find "$ANDROID_SDK_ROOT" -name "aidl" -type f 2>/dev/null || echo "AIDL not found"
-            exit 1
-          fi
+          mkdir -p ~/.android
+          echo "Accepting all Android SDK licenses..."
+          echo -e "\n86823d38d4ac7f29" > ~/.android/repositories.cfg
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          echo -e "24333f8a63b6825ea9c5514f83c2829b004d1fee" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
+          echo -e "d56f5187479451eabf01fb78af6dfcb131b33910" > ~/.buildozer/android/platform/android-sdk/licenses/intel-android-extra-license
 
       - name: Install system dependencies
         run: sudo apt update && sudo apt install -y git zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
