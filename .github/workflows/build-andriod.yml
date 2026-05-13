@@ -31,6 +31,15 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          
+      - name: Point Buildozer at installed SDK and verify AIDL
+        run: |
+          mkdir -p ~/.buildozer/android/platform
+          rm -rf ~/.buildozer/android/platform/android-sdk
+          ln -sf "$ANDROID_SDK_ROOT" ~/.buildozer/android/platform/android-sdk
+          test -x "$ANDROID_SDK_ROOT/tools/bin/sdkmanager"
+          # … AIDL check …    
+          
 
       - name: Install Android SDK and NDK
         uses: android-actions/setup-android@v3
