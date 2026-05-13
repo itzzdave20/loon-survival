@@ -57,6 +57,9 @@ android.minapi = 21
 # (int) Android SDK version to use
 android.sdk = 31
 
+# (str) Android SDK directory (equivalent to CI: ln -sf …/sdk ~/.buildozer/android/platform/android-sdk). Local builds: override with env APP_ANDROID_SDK_PATH.
+android.sdk_path = /usr/local/lib/android/sdk
+
 # (str) Android NDK version to use
 android.ndk = 25b
 
